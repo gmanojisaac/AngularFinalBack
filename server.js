@@ -19,6 +19,7 @@ app.use(bodyParser.json());
 
 let currentWeeklyExpiry = "24O01";
 let selectedside = '';
+let selectedPrice = 100;
 
 // POST endpoint to receive JSON data
 app.post("/api/appid", (req, res) => {
@@ -40,8 +41,11 @@ app.post("/api/appid", (req, res) => {
     res.json({ message: "res:" + fyers.generateAuthCode() });
   } else if (
     receivedData.autn !== undefined &&
-    receivedData.secret != undefined
+    receivedData.secret != undefined &&
+    receivedData.label !== undefined
   ) {
+    //console.log('reached here')
+    currentWeeklyExpiry = receivedData.label;
     fyers
       .generate_access_token({
         client_id: savedappId,
@@ -52,16 +56,20 @@ app.post("/api/appid", (req, res) => {
         if (response.s == "ok") {
           fyers.setAccessToken(response.access_token);
           //console.log(response.access_token);
+          // Fine the CE/PE price and symbol
           res.json({ message: "res:" + "success access token:" });
         } else {
           console.log("error generating access token", response);
         }
       });
-  } else if(receivedData.weeklylabel !== undefined && receivedData.side !== undefined){
-    currentWeeklyExpiry = receivedData.weeklylabel;
-    selectedside = receivedData.side;
-    console.log ('received label:',currentWeeklyExpiry, 'Side:', selectedside )
-    res.json({ message: "res:" + "100" });
+    //res.json({ message: "res:" + "success access token:" });
+  } else if(receivedData.side !== undefined){
+      
+      selectedside = receivedData.side;
+      //console.log ('Side:', selectedside )
+      res.json({ message: "res:" + selectedPrice });
+      //Learnings - > split will return 2 sides of the split
+      //If you want to slice the Number then slice 2 places instead of 1 
   }
 });
 
